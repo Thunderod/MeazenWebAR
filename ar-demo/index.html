@@ -4,84 +4,47 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>AR Quick View</title>
-  <style>
-    body {
-      font-family: system-ui, Segoe UI, Roboto, Arial;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: #111;
-      color: #fff;
-    }
-    a {
-      color: #8cf;
-      display: inline-block;
-      margin-top: 12px;
-    }
-  </style>
+  <style>body{font-family:system-ui,Segoe UI,Roboto,Arial;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#111;color:#fff}</style>
 </head>
 <body>
   <div>
     <h1>Open in AR</h1>
     <p>If nothing happens, tap the button below.</p>
-    <p id="status" aria-live="polite">Detecting device…</p>
-    <p>
-      <a id="manual" href="#" style="color:#8cf;display:inline-block;margin-top:12px;" aria-label="Manual AR link">
-        Manual AR link
-      </a>
-    </p>
+    <p id="status">Detecting device…</p>
+    <p><a id="manual" href="#" style="color:#8cf;display:inline-block;margin-top:12px;">Manual AR link</a></p>
   </div>
 
   <script>
-  (function() {
+  (function(){
     // URLs — change these to your hosted files
-    const usdz = 'https://0c4ea3a9.meazenwebar3.pages.dev'; // iOS
-    const glb = 'https://0c4ea3a9.meazenwebar3.pages.dev';   // Android (Scene Viewer)
+    var usdz = 'https://YOUR_DOMAIN/models/product.usdz'; // iOS
+    var glb = 'https://YOUR_DOMAIN/models/product.glb';   // Android (Scene Viewer)
 
-    // Get references to DOM elements
-    const status = document.getElementById('status');
-    const manual = document.getElementById('manual');
+    var ua = navigator.userAgent || navigator.vendor || window.opera;
+    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    var status = document.getElementById('status');
+    var manual = document.getElementById('manual');
 
-    // Detect the user's device
-    const ua = navigator.userAgent || navigator.vendor || window.opera;
-    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    const isAndroid = /Android/.test(ua);
-
-    // Handle iOS devices
     if (isIOS) {
       status.textContent = 'iOS device detected — opening Quick Look...';
+      // Directly navigate to the .usdz file — Safari / native camera -> Quick Look will handle it.
       manual.href = usdz;
-
-      // Small delay to show the message, then navigate
-      setTimeout(() => {
-        window.location.href = usdz;
-      }, 500);
+      // small delay to show message then navigate
+      setTimeout(function(){ window.location.href = usdz; }, 350);
       return;
     }
 
-    // Handle Android devices
-    if (isAndroid) {
-      status.textContent = 'Android device detected — launching Scene Viewer...';
-      const sceneUrl = encodeURIComponent(glb);
-      const intent = `intent://arvr.google.com/scene-viewer/1.0?file=${sceneUrl}&title=Product#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;end`;
-
-      // Set manual fallback and try to open intent
-      manual.href = glb;
-      setTimeout(() => {
-        window.location.href = intent;
-      }, 500);
-      return;
-    }
-
-    // Fallback for unsupported platforms
-    status.textContent = 'Unsupported device — please use an iOS or Android device.';
-    manual.href = '#';
-    manual.textContent = 'No AR viewer available for your device.';
+    // Android path: use Scene Viewer intent (preferred)
+    status.textContent = 'Android device detected — launching Scene Viewer...';
+    var sceneUrl = encodeURIComponent(glb);
+    var intent = 'intent://arvr.google.com/scene-viewer/1.0?file=' + sceneUrl + '&title=Product#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;end';
+    // set manual fallback and try to open intent
+    manual.href = glb;
+    setTimeout(function(){
+      window.location.href = intent;
+      // If intent fails it often falls back to the browser which will try to open the GLB page.
+    }, 350);
   })();
   </script>
 </body>
-
 </html>
-
