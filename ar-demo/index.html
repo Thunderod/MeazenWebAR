@@ -4,49 +4,82 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>AR Quick View</title>
-  <style>body{font-family:system-ui,Segoe UI,Roboto,Arial;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;background:#111;color:#fff}</style>
+  <style>
+    body {
+      font-family: system-ui, Segoe UI, Roboto, Arial;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: #111;
+      color: #fff;
+    }
+    a {
+      color: #8cf;
+      display: inline-block;
+      margin-top: 12px;
+    }
+  </style>
 </head>
 <body>
   <div>
     <h1>Open in AR</h1>
     <p>If nothing happens, tap the button below.</p>
-    <p id="status">Detecting device…</p>
-    <p><a id="manual" href="#" style="color:#8cf;display:inline-block;margin-top:12px;">Manual AR link</a></p>
+    <p id="status" aria-live="polite">Detecting device…</p>
+    <p>
+      <a id="manual" href="#" style="color:#8cf;display:inline-block;margin-top:12px;" aria-label="Manual AR link">
+        Manual AR link
+      </a>
+    </p>
   </div>
 
   <script>
-  (function(){
+  (function() {
     // URLs — change these to your hosted files
-    var usdz = 'https://5c102ec7.meazenwebar3.pages.dev'; // iOS
-    var glb = 'https://5c102ec7.meazenwebar3.pages.dev';   // Android (Scene Viewer)
+    const usdz = 'meazenwebar3.pages.dev/models/monkeyAnim.usd'; // iOS
+    const glb = 'meazenwebar3.pages.dev/models/monkeyAnim.glb';  // Android (Scene Viewer)
 
-    var ua = navigator.userAgent || navigator.vendor || window.opera;
-    var isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    var status = document.getElementById('status');
-    var manual = document.getElementById('manual');
+    // Get references to DOM elements
+    const status = document.getElementById('status');
+    const manual = document.getElementById('manual');
 
+    // Detect the user's device
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isAndroid = /Android/.test(ua);
+
+    // Handle iOS devices
     if (isIOS) {
       status.textContent = 'iOS device detected — opening Quick Look...';
-      // Directly navigate to the .usdz file — Safari / native camera -> Quick Look will handle it.
       manual.href = usdz;
-      // small delay to show message then navigate
-      setTimeout(function(){ window.location.href = usdz; }, 350);
+
+      // Small delay to show the message, then navigate
+      setTimeout(() => {
+        window.location.href = usdz;
+      }, 500);
       return;
     }
 
-    // Android path: use Scene Viewer intent (preferred)
-    status.textContent = 'Android device detected — launching Scene Viewer...';
-    var sceneUrl = encodeURIComponent(glb);
-    var intent = 'intent://arvr.google.com/scene-viewer/1.0?file=' + sceneUrl + '&title=Product#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;end';
-    // set manual fallback and try to open intent
-    manual.href = glb;
-    setTimeout(function(){
-      window.location.href = intent;
-      // If intent fails it often falls back to the browser which will try to open the GLB page.
-    }, 350);
+    // Handle Android devices
+    if (isAndroid) {
+      status.textContent = 'Android device detected — launching Scene Viewer...';
+      const sceneUrl = encodeURIComponent(glb);
+      const intent = `intent://arvr.google.com/scene-viewer/1.0?file=${sceneUrl}&title=Product#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;end`;
+
+      // Set manual fallback and try to open intent
+      manual.href = glb;
+      setTimeout(() => {
+        window.location.href = intent;
+      }, 500);
+      return;
+    }
+
+    // Fallback for unsupported platforms
+    status.textContent = 'Unsupported device — please use an iOS or Android device.';
+    manual.href = '#';
+    manual.textContent = 'No AR viewer available for your device.';
   })();
   </script>
 </body>
 </html>
-
-
